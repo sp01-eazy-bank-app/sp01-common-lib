@@ -32,30 +32,19 @@ public class RabbitOutboundLoggerAspect {
         String routingKey = args.length > 1 ? "RoutingKey: " + args[1] : "UNKNOWN_ROUTING_KEY";
         Object payload = args.length > 2 ? args[2] : null;
 
-        String resource = exchange + " : " + routingKey;
-
-        // Try to extract headers if the payload is a Message
         Map<String, String> headers = new HashMap<>();
-
         if (payload instanceof Message message) {
-            // Extract headers from message properties
-            message.getMessageProperties().getHeaders().forEach((k, v) -> {
-                headers.put(k, String.valueOf(v));
-            });
-        } else {
-            // No explicit Message object, but still capture standard context headers
-            headers.put("exchange", exchange);
-            headers.put("routingKey", routingKey);
+            message.getMessageProperties().getHeaders()
+                    .forEach((k, v) -> headers.put(k, String.valueOf(v)));
         }
-        // Always ensure traceId is present
+
         String traceId = Optional.ofNullable(MDC.get(IOLoggerConstant.TRACE_ID))
                 .orElseGet(IOLoggerUtil::generateTraceId);
         headers.putIfAbsent(IOLoggerConstant.TRACE_ID, traceId);
 
-        // log outbound before sending
+        String resource = exchange + " : " + routingKey;
         ioLoggerService.logRabbitOutboundResponse(payload, traceId, appName, resource, 204, headers);
 
-        // Proceed with actual Rabbit send
         return joinPoint.proceed();
     }
 }
