@@ -16,9 +16,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Aspect
 @Slf4j
@@ -26,8 +26,6 @@ import java.util.Optional;
 public class IOLoggerAspect {
 
     private final IOLoggerService ioLoggerService;
-
-    private static final String IO_LOGGER_ALREADY_EXISTS = "IO_LOGGER_ALREADY_EXISTS";
 
     @Value("${spring.application.name:unknown-service}")
     private String sourceApplication;
@@ -39,39 +37,37 @@ public class IOLoggerAspect {
 
         HttpServletRequest request = attributes.getRequest();
         HttpServletResponse response = attributes.getResponse();
-
-        if (!(request instanceof ContentCachingRequestWrapper) || !(response instanceof ContentCachingResponseWrapper)) {
+        if (!(request instanceof ContentCachingRequestWrapper wrappedRequest)
+                || !(response instanceof ContentCachingResponseWrapper wrappedResponse)) {
             return joinPoint.proceed();
         }
-
-        ContentCachingRequestWrapper wrappedRequest = (ContentCachingRequestWrapper) request;
-        ContentCachingResponseWrapper wrappedResponse = (ContentCachingResponseWrapper) response;
 
         String traceId = Optional.ofNullable(request.getHeader(IOLoggerConstant.TRACE_ID))
                 .filter(s -> !s.isEmpty())
                 .orElse(IOLoggerUtil.generateTraceId());
-
         wrappedRequest.setAttribute(IOLoggerConstant.TRACE_ID, traceId);
 
         String resource = IOLoggerUtil.buildFullResource(request);
 
         ioLoggerService.logHttpInboundRequest(wrappedRequest, traceId, sourceApplication, resource);
+
         Object result;
         try {
-            result = joinPoint.proceed(); // body is read here
+            result = joinPoint.proceed();
         } catch (Throwable e) {
             log.error("Controller threw exception for traceId={}", traceId, e);
             throw e;
         } finally {
-            wrappedResponse.copyBodyToResponse(); // flush response
+            wrappedResponse.copyBodyToResponse();
         }
 
-        Map<String, String> responseHeaders = new HashMap<>();
-        wrappedResponse.getHeaderNames().forEach(h -> responseHeaders.put(h, wrappedResponse.getHeader(h)));
+        Map<String, String> responseHeaders = wrappedResponse.getHeaderNames().stream()
+                .collect(Collectors.toMap(h -> h, wrappedResponse::getHeader));
 
-        int httpStatus = wrappedResponse.getStatus();
-        ioLoggerService.logHttpOutboundResponse(wrappedResponse, traceId, sourceApplication, resource,
-                httpStatus, responseHeaders);
+        ioLoggerService.logHttpOutboundResponse(
+                wrappedResponse, traceId, sourceApplication, resource,
+                wrappedResponse.getStatus(), responseHeaders
+        );
 
         return result;
     }
