@@ -4,18 +4,22 @@ import com.bank.iolog.entity.IOLogEntry;
 import com.bank.iolog.enums.ChannelType;
 import com.bank.iolog.enums.IOType;
 import com.bank.iolog.repository.IOLogEntryRepository;
+import com.bank.iolog.util.IOLoggerConstant;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,13 +35,47 @@ public class IOLoggerService {
     public void logHttpInboundRequest(ContentCachingRequestWrapper request, String traceId,
                                       String sourceApplication, String resource) {
         try {
+            // try to use recorded start time if present so ordering is accurate
+            Instant ts;
+            Object attr = request.getAttribute(IOLoggerConstant.REQUEST_START_TIME);
+            if (attr instanceof Instant) {
+                ts = (Instant) attr;
+            } else {
+                ts = Instant.now();
+            }
+
+            // Prefer the cached request body attribute if present (set by RequestWrappingFilter)
+            Object cachedBody = request.getAttribute(IOLoggerConstant.REQUEST_BODY);
+            String payload;
+            if (cachedBody instanceof String s && !s.isEmpty()) {
+                payload = s;
+            } else {
+                payload = extractPayload(request);
+            }
+
             IOLogEntry entry = buildLogEntry(
                     traceId, sourceApplication, resource, IOType.INBOUND,
-                    serialize(extractHeaders(request)), extractPayload(request), null, ChannelType.REST
+                    serialize(extractHeaders(request)), payload, null, ChannelType.REST,
+                    ts
             );
             ioLogEntryRepository.save(entry);
         } catch (Exception e) {
             log.error("Error while logging HTTP inbound request", e);
+        }
+    }
+
+    // New: accept payload and timestamp directly
+    public void logHttpInboundWithPayload(String payload, ContentCachingRequestWrapper request, String traceId,
+                                          String sourceApplication, String resource, Instant timestamp) {
+        try {
+            IOLogEntry entry = buildLogEntry(
+                    traceId, sourceApplication, resource, IOType.INBOUND,
+                    serialize(extractHeaders(request)), payload, null, ChannelType.REST,
+                    timestamp != null ? timestamp : Instant.now()
+            );
+            ioLogEntryRepository.save(entry);
+        } catch (Exception e) {
+            log.error("Error while logging HTTP inbound request with payload", e);
         }
     }
 
@@ -46,9 +84,25 @@ public class IOLoggerService {
                                         String sourceApplication, String resource,
                                         Integer httpStatus, Map<String, String> responseHeaders) {
         try {
+            // Attempt to get the request start time from the current request attributes so outbound is ordered after inbound
+            Instant outboundTs = Instant.now();
+            try {
+                RequestAttributes ra = RequestContextHolder.getRequestAttributes();
+                if (ra != null) {
+                    Object attr = ra.getAttribute(IOLoggerConstant.REQUEST_START_TIME, RequestAttributes.SCOPE_REQUEST);
+                    if (attr instanceof Instant) {
+                        // make outbound timestamp slightly after inbound so sorting is deterministic
+                        outboundTs = ((Instant) attr).plus(1, ChronoUnit.MILLIS);
+                    }
+                }
+            } catch (Exception ignored) {
+                outboundTs = Instant.now();
+            }
+
             IOLogEntry entry = buildLogEntry(
                     traceId, sourceApplication, resource, IOType.OUTBOUND,
-                    serialize(responseHeaders), extractPayload(response), httpStatus, ChannelType.REST
+                    serialize(responseHeaders), extractPayload(response), httpStatus, ChannelType.REST,
+                    outboundTs
             );
             ioLogEntryRepository.save(entry);
         } catch (Exception e) {
@@ -62,7 +116,8 @@ public class IOLoggerService {
         try {
             IOLogEntry entry = buildLogEntry(
                     traceId, sourceApplication, resource, IOType.INBOUND,
-                    serialize(headers), payload, null, ChannelType.RABBITMQ
+                    serialize(headers), payload, null, ChannelType.RABBITMQ,
+                    Instant.now()
             );
             ioLogEntryRepository.save(entry);
         } catch (Exception e) {
@@ -76,7 +131,8 @@ public class IOLoggerService {
         try {
             IOLogEntry entry = buildLogEntry(
                     traceId, sourceApplication, resource, IOType.OUTBOUND,
-                    serialize(headers), serializeResponse(response), httpStatus, ChannelType.RABBITMQ
+                    serialize(headers), serializeResponse(response), httpStatus, ChannelType.RABBITMQ,
+                    Instant.now()
             );
             ioLogEntryRepository.save(entry);
         } catch (Exception e) {
@@ -90,7 +146,24 @@ public class IOLoggerService {
     }
 
     private String extractPayload(ContentCachingRequestWrapper request) {
-        return toStringSafe(request.getContentAsByteArray(), request.getCharacterEncoding());
+        String body = toStringSafe(request.getContentAsByteArray(), request.getCharacterEncoding());
+        if (!"{}".equals(body) && body != null) return body;
+
+        // fallback: build payload from parameters (form data or query params)
+        try {
+            Map<String, String[]> params = request.getParameterMap();
+            if (params != null && !params.isEmpty()) {
+                // convert to single-value map where possible
+                Map<String, Object> single = params.entrySet().stream()
+                        .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().length == 1 ? e.getValue()[0] : e.getValue()));
+                return MAPPER.writeValueAsString(single);
+            }
+            String query = request.getQueryString();
+            if (query != null && !query.isEmpty()) return query;
+        } catch (Exception ignored) {
+        }
+
+        return "{}";
     }
 
     private String extractPayload(ContentCachingResponseWrapper response) {
@@ -132,7 +205,8 @@ public class IOLoggerService {
     }
 
     private IOLogEntry buildLogEntry(String traceId, String sourceApp, String resource, IOType ioType,
-                                     String header, String payload, Integer httpStatus, ChannelType channelType) {
+                                     String header, String payload, Integer httpStatus, ChannelType channelType,
+                                     Instant timestamp) {
         return IOLogEntry.builder()
                 .traceId(traceId)
                 .sourceApplication(sourceApp)
@@ -142,7 +216,7 @@ public class IOLoggerService {
                 .payload(payload)
                 .httpStatus(httpStatus)
                 .communicationChannel(channelType)
-                .timestamp(Instant.now())
+                .timestamp(timestamp)
                 .build();
     }
 }
