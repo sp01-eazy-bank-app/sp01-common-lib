@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.bank.common</groupId>
+	<artifactId>sp01-common-lib</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+	<name>sp01-common-lib</name>
+	<description>Shared library containing models and utilities for all microservices for the bank services</description>
+
+	<properties>
+		<java.version>21</java.version>
+        <maven.compiler.sources>${java.version}</maven.compiler.sources>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <lombok.version>1.18.34</lombok.version>
+        <jjwt.version>0.11.5</jjwt.version>
+        <spring.boot.version>3.5.5</spring.boot.version>
+        <spring-cloud.version>2025.0.0</spring-cloud.version>
+        <mysql.connector.version>8.0.33</mysql.connector.version>
+	</properties>
+
+    <!-- Parent POM manages versions for all submodules -->
+    <modules>
+        <module>sp01-common-models</module>
+        <module>sp01-common-utility</module>
+    </modules>
+
+	<dependencyManagement>
+        <dependencies>
+            <!--Dependencies to be inherited by submodules and sp01 bank services-->
+
+            <!--sp01 specific dependencies to be inherited: start-->
+            <dependency>
+                <groupId>com.bank.common</groupId>
+                <artifactId>sp01-sms-service-domain-models</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bank.common</groupId>
+                <artifactId>sp01-shared-domain-models</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bank.common</groupId>
+                <artifactId>sp01-email-service-domain-models</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bank.common</groupId>
+                <artifactId>sp01-exception-handler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bank.common</groupId>
+                <artifactId>sp01-security-handler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bank.common</groupId>
+                <artifactId>sp01-iologger</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bank.common</groupId>
+                <artifactId>sp01-common-config</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <!--sp01 specific dependencies to be inherited: end-->
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql.connector.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring.boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!--JJWT dependencies: start-->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <!--JJWT dependencies: end-->
+        </dependencies>
+	</dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                        <release>${java.version}</release>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

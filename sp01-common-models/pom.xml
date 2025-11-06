@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+        <groupId>com.bank.common</groupId>
+        <artifactId>sp01-common-lib</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<artifactId>sp01-common-models</artifactId>
+    <packaging>pom</packaging>
+	<name>sp01-common-models</name>
+	<description>Parent module for domain models shared across bank services</description>
+
+    <modules>
+        <module>sp01-sms-service-domain-models</module>
+        <module>sp01-shared-domain-models</module>
+        <module>sp01-email-service-domain-models</module>
+    </modules>
+</project>
