@@ -100,7 +100,7 @@ public class IOLoggerService {
 
             IOLogEntry entry = buildLogEntry(
                     traceId, sourceApplication, resource, IOType.OUTBOUND,
-                    serialize(responseHeaders), extractPayload(response), httpStatus, ChannelType.REST,
+                    serialize(responseHeaders), toStringSafe(response.getContentAsByteArray(), response.getCharacterEncoding()), httpStatus, ChannelType.REST,
                     outboundTs
             );
             ioLogEntryRepository.save(entry);
@@ -145,28 +145,10 @@ public class IOLoggerService {
     }
 
     private String extractPayload(ContentCachingRequestWrapper request) {
+        // Only use the cached request body. If there is no body, return null.
         String body = toStringSafe(request.getContentAsByteArray(), request.getCharacterEncoding());
         if (body != null && !body.isBlank()) return body;
-
-        // fallback: build payload from parameters (form data or query params)
-        try {
-            Map<String, String[]> params = request.getParameterMap();
-            if (!params.isEmpty()) {
-                // convert to single-value map where possible
-                Map<String, Object> single = params.entrySet().stream()
-                        .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().length == 1 ? e.getValue()[0] : e.getValue()));
-                return MAPPER.writeValueAsString(single);
-            }
-            String query = request.getQueryString();
-            if (query != null && !query.isEmpty()) return query;
-        } catch (Exception ignored) {
-        }
-
         return null;
-    }
-
-    private String extractPayload(ContentCachingResponseWrapper response) {
-        return toStringSafe(response.getContentAsByteArray(), response.getCharacterEncoding());
     }
 
     private String toStringSafe(byte[] buf, String encoding) {

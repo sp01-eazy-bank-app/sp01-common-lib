@@ -17,8 +17,9 @@ public class IOLoggerUtil {
     }
 
     public static String buildFullResource(HttpServletRequest request) {
-        String uri = request.getRequestURI();
+        StringBuffer url = request.getRequestURL();
         String query = request.getQueryString();
-        return request.getMethod() + " " + (query == null ? uri : uri + "?" + query);
+        String full = (query == null || query.isEmpty()) ? url.toString() : url.append('?').append(query).toString();
+        return request.getMethod() + " " + full;
     }
 }
