@@ -38,17 +38,18 @@ public class RequestWrappingFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        ContentCachingRequestWrapper wrappedRequest = request instanceof ContentCachingRequestWrapper
-                ? (ContentCachingRequestWrapper) request
-                : new ContentCachingRequestWrapper(request);
+        // Prepare wrappers (prefer CachedBodyHttpServletRequest when possible)
+        ContentCachingRequestWrapper wrappedRequest;
+        CachedBodyHttpServletRequest cachedRequest = null;
 
-        // if wrappedRequest has no bytes (maybe already consumed), use CachedBodyHttpServletRequest
-        if (wrappedRequest.getContentAsByteArray().length == 0) {
+        if (request instanceof ContentCachingRequestWrapper) {
+            wrappedRequest = (ContentCachingRequestWrapper) request;
+        } else {
             try {
-                CachedBodyHttpServletRequest cached = new CachedBodyHttpServletRequest(request);
-                wrappedRequest = new ContentCachingRequestWrapper(cached);
+                cachedRequest = new CachedBodyHttpServletRequest(request);
+                wrappedRequest = new ContentCachingRequestWrapper(cachedRequest);
             } catch (IOException e) {
-                // fallback to original wrappedRequest
+                wrappedRequest = new ContentCachingRequestWrapper(request);
             }
         }
 
@@ -60,44 +61,21 @@ public class RequestWrappingFilter extends OncePerRequestFilter {
         Instant startTs = Instant.now();
         wrappedRequest.setAttribute(IOLoggerConstant.REQUEST_START_TIME, startTs);
 
-        // set request attributes so RequestContextHolder-based lookups see the wrapped request
+        // make wrapped request/response visible through RequestContextHolder
         ServletRequestAttributes previousAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        ServletRequestAttributes wrappedAttributes = new ServletRequestAttributes(wrappedRequest, wrappedResponse);
-        RequestContextHolder.setRequestAttributes(wrappedAttributes);
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(wrappedRequest, wrappedResponse));
 
         try {
+            // Proceed with filter chain
             filterChain.doFilter(wrappedRequest, wrappedResponse);
 
-            // After processing, cache the request body string into an attribute for consumers that use RequestContextHolder
-            String cachedBody = null;
-            try {
-                byte[] content = wrappedRequest.getContentAsByteArray();
-                if (content.length > 0) {
-                    String encoding = Optional.ofNullable(wrappedRequest.getCharacterEncoding()).orElse(StandardCharsets.UTF_8.name());
-                    cachedBody = new String(content, encoding);
-                    wrappedRequest.setAttribute(IOLoggerConstant.REQUEST_BODY, cachedBody);
-                }
-            } catch (Exception ignored) {
-            }
-
-            // Build trace id (prefer header or existing attribute)
-            String traceId = Optional.ofNullable(wrappedRequest.getHeader(IOLoggerConstant.TRACE_ID))
-                    .filter(s -> !s.isEmpty())
-                    .orElse(null);
-            if (traceId == null) {
-                Object attrObj = wrappedRequest.getAttribute(IOLoggerConstant.TRACE_ID);
-                if (attrObj != null) traceId = attrObj.toString();
-            }
-            if (traceId == null) traceId = java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
-            wrappedRequest.setAttribute(IOLoggerConstant.TRACE_ID, traceId);
-
+            // Resolve request body, trace id, resource and response headers using helper methods
+            String cachedBody = resolveRequestBody(wrappedRequest, cachedRequest);
+            String traceId = resolveTraceId(wrappedRequest);
             String resource = IOLoggerUtil.buildFullResource(wrappedRequest);
+            Map<String, String> responseHeaders = collectResponseHeaders(wrappedResponse);
 
-            // collect response headers (replace nulls with empty string)
-            Map<String, String> responseHeaders = wrappedResponse.getHeaderNames().stream()
-                    .collect(Collectors.toMap(h -> h, h -> Optional.ofNullable(wrappedResponse.getHeader(h)).orElse("")));
-
-            // Debug logging to help diagnose payload / ordering problems
+            // Debug lengths (best-effort)
             try {
                 int reqLen = cachedBody != null ? cachedBody.length() : wrappedRequest.getContentAsByteArray().length;
                 int respLen = wrappedResponse.getContentAsByteArray().length;
@@ -106,37 +84,92 @@ public class RequestWrappingFilter extends OncePerRequestFilter {
                 log.debug("IOLogger: unable to compute body lengths", e);
             }
 
-            // Log inbound (prefer passing the cached body and start ts directly to avoid timing/visibility issues)
-            try {
-                if (cachedBody != null) {
-                    ioLoggerService.logHttpInboundWithPayload(cachedBody, wrappedRequest, traceId, sourceApplication, resource, startTs);
-                } else {
-                    ioLoggerService.logHttpInboundRequest(wrappedRequest, traceId, sourceApplication, resource);
-                }
-            } catch (Exception e) {
-                // best effort
-                log.debug("IOLogger: inbound logging failed for traceId={}", traceId, e);
-            }
-
-            try {
-                ioLoggerService.logHttpOutboundResponse(wrappedResponse, traceId, sourceApplication, resource,
-                        wrappedResponse.getStatus(), responseHeaders);
-            } catch (Exception e) {
-                // best effort
-                log.debug("IOLogger: outbound logging failed for traceId={}", traceId, e);
-            }
+            // Log inbound and outbound using helper methods (best-effort)
+            logInbound(cachedBody, wrappedRequest, traceId, resource, startTs);
+            logOutbound(wrappedResponse, traceId, resource, responseHeaders);
 
         } finally {
+            // Ensure response body is copied back and restore previous RequestAttributes
             try {
                 wrappedResponse.copyBodyToResponse();
             } finally {
-                // restore previous attributes
                 if (previousAttributes != null) {
                     RequestContextHolder.setRequestAttributes(previousAttributes);
                 } else {
                     RequestContextHolder.resetRequestAttributes();
                 }
             }
+        }
+    }
+
+    // Helper: resolve the request body from attribute, cached wrapper, or content wrapper
+    private String resolveRequestBody(ContentCachingRequestWrapper wrappedRequest, CachedBodyHttpServletRequest cachedRequest) {
+        try {
+            Object attr = wrappedRequest.getAttribute(IOLoggerConstant.REQUEST_BODY);
+            if (attr instanceof String s && !s.isEmpty()) return s;
+
+            if (cachedRequest != null) {
+                byte[] b = cachedRequest.getCachedBody();
+                if (b.length > 0) {
+                    String enc = wrappedRequest.getCharacterEncoding() != null ? wrappedRequest.getCharacterEncoding() : StandardCharsets.UTF_8.name();
+                    String body = new String(b, enc);
+                    wrappedRequest.setAttribute(IOLoggerConstant.REQUEST_BODY, body);
+                    return body;
+                }
+            }
+
+            byte[] content = wrappedRequest.getContentAsByteArray();
+            if (content.length > 0) {
+                String encoding = wrappedRequest.getCharacterEncoding() != null ? wrappedRequest.getCharacterEncoding() : StandardCharsets.UTF_8.name();
+                String body = new String(content, encoding);
+                wrappedRequest.setAttribute(IOLoggerConstant.REQUEST_BODY, body);
+                return body;
+            }
+        } catch (Exception e) {
+            log.debug("IOLogger: failed to resolve request body", e);
+        }
+        return null;
+    }
+
+    // Helper: build or reuse a trace id and store it on the request
+    private String resolveTraceId(ContentCachingRequestWrapper wrappedRequest) {
+        String traceId = Optional.ofNullable(wrappedRequest.getHeader(IOLoggerConstant.TRACE_ID))
+                .filter(s -> !s.isEmpty())
+                .orElse(null);
+        if (traceId == null) {
+            Object attrObj = wrappedRequest.getAttribute(IOLoggerConstant.TRACE_ID);
+            if (attrObj != null) traceId = attrObj.toString();
+        }
+        if (traceId == null) traceId = IOLoggerUtil.generateTraceId();
+        wrappedRequest.setAttribute(IOLoggerConstant.TRACE_ID, traceId);
+        return traceId;
+    }
+
+    // Helper: collect response headers into a simple map
+    private Map<String, String> collectResponseHeaders(ContentCachingResponseWrapper wrappedResponse) {
+        return wrappedResponse.getHeaderNames().stream()
+                .collect(Collectors.toMap(h -> h, h -> Optional.ofNullable(wrappedResponse.getHeader(h)).orElse("")));
+    }
+
+    // Extracted logging helpers for better readability
+    private void logInbound(String cachedBody, ContentCachingRequestWrapper wrappedRequest, String traceId, String resource, Instant startTs) {
+        try {
+            if (cachedBody != null) {
+                ioLoggerService.logHttpInboundWithPayload(cachedBody, wrappedRequest, traceId, sourceApplication, resource, startTs);
+            } else {
+                ioLoggerService.logHttpInboundRequest(wrappedRequest, traceId, sourceApplication, resource);
+            }
+        } catch (Exception e) {
+            log.debug("IOLogger: inbound logging failed for traceId={}", traceId, e);
+        }
+    }
+
+    private void logOutbound(ContentCachingResponseWrapper wrappedResponse, String traceId, String resource, Map<String, String> responseHeaders) {
+        try {
+            ioLoggerService.logHttpOutboundResponse(wrappedResponse, traceId, sourceApplication, resource,
+                    wrappedResponse.getStatus(), responseHeaders);
+        } catch (Exception e) {
+            log.debug("IOLogger: outbound logging failed for traceId={}", traceId, e);
         }
     }
 }
