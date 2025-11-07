@@ -32,3 +32,5 @@ sp01-common-utility/sp01-common-config/target
 sp01-common-utility/sp01-exception-handler/target
 sp01-common-utility/sp01-iologger/target
 sp01-common-utility/sp01-security-handler/target
+
+sp01-common-utility/sp01-iologger/iologger_conceptual.md
