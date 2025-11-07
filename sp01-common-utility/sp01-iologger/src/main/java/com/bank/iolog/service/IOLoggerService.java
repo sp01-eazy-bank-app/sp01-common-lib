@@ -19,7 +19,6 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -92,7 +91,7 @@ public class IOLoggerService {
                     Object attr = ra.getAttribute(IOLoggerConstant.REQUEST_START_TIME, RequestAttributes.SCOPE_REQUEST);
                     if (attr instanceof Instant) {
                         // make outbound timestamp slightly after inbound so sorting is deterministic
-                        outboundTs = ((Instant) attr).plus(1, ChronoUnit.MILLIS);
+                        outboundTs = ((Instant) attr).plusNanos(1);
                     }
                 }
             } catch (Exception ignored) {
@@ -147,12 +146,12 @@ public class IOLoggerService {
 
     private String extractPayload(ContentCachingRequestWrapper request) {
         String body = toStringSafe(request.getContentAsByteArray(), request.getCharacterEncoding());
-        if (!"{}".equals(body) && body != null) return body;
+        if (body != null && !body.isBlank()) return body;
 
         // fallback: build payload from parameters (form data or query params)
         try {
             Map<String, String[]> params = request.getParameterMap();
-            if (params != null && !params.isEmpty()) {
+            if (!params.isEmpty()) {
                 // convert to single-value map where possible
                 Map<String, Object> single = params.entrySet().stream()
                         .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().length == 1 ? e.getValue()[0] : e.getValue()));
@@ -163,7 +162,7 @@ public class IOLoggerService {
         } catch (Exception ignored) {
         }
 
-        return "{}";
+        return null;
     }
 
     private String extractPayload(ContentCachingResponseWrapper response) {
@@ -171,7 +170,7 @@ public class IOLoggerService {
     }
 
     private String toStringSafe(byte[] buf, String encoding) {
-        if (buf == null || buf.length == 0) return "{}";
+        if (buf == null || buf.length == 0) return null;
         Charset charset = getCharset(encoding);
         return new String(buf, charset);
     }
@@ -186,9 +185,9 @@ public class IOLoggerService {
 
     private String serialize(Object obj) {
         try {
-            return MAPPER.writeValueAsString(obj);
+            return obj == null ? null : MAPPER.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
-            return "{}";
+            return null;
         }
     }
 
@@ -197,10 +196,10 @@ public class IOLoggerService {
             if (response instanceof ResponseEntity<?> entity) {
                 return MAPPER.writeValueAsString(entity.getBody());
             }
-            return response != null ? MAPPER.writeValueAsString(response) : "{}";
+            return response != null ? MAPPER.writeValueAsString(response) : null;
         } catch (Exception e) {
             log.warn("Could not serialize response body", e);
-            return "{}";
+            return null;
         }
     }
 

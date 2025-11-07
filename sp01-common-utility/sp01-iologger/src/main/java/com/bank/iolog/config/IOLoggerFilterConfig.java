@@ -1,18 +1,26 @@
 package com.bank.iolog.config;
 
 import com.bank.iolog.filter.RequestWrappingFilter;
+import com.bank.iolog.repository.IOLogEntryRepository;
 import com.bank.iolog.service.IOLoggerService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
+import org.springframework.context.annotation.DependsOn;
 
 @Configuration
+@DependsOn("ioLoggerTransactionManager")
 public class IOLoggerFilterConfig {
 
     @Value("${spring.application.name:unknown-service}")
     private String sourceApplication;
+
+    @Bean
+    public IOLoggerService ioLoggerService(IOLogEntryRepository ioLogEntryRepository) {
+        return new IOLoggerService(ioLogEntryRepository);
+    }
 
     @Bean
     public FilterRegistrationBean<RequestWrappingFilter> requestWrappingFilter(IOLoggerService ioLoggerService) {
