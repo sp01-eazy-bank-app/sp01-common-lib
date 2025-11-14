@@ -65,7 +65,7 @@
             </dependency>
             <dependency>
                 <groupId>com.bank.common</groupId>
-                <artifactId>sp01-common-config</artifactId>
+                <artifactId>sp01-common-helper</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!--sp01 specific dependencies to be inherited: end-->
