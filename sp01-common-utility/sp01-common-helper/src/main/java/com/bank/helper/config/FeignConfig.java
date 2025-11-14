@@ -1,4 +1,4 @@
-package com.bank.config;
+package com.bank.helper.config;
 
 import com.bank.iolog.util.IOLoggerConstant;
 import feign.RequestInterceptor;
