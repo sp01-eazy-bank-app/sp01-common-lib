@@ -18,6 +18,6 @@
         <module>sp01-exception-handler</module>
         <module>sp01-security-handler</module>
         <module>sp01-iologger</module>
-        <module>sp01-common-config</module>
+        <module>sp01-common-helper</module>
     </modules>
 </project>

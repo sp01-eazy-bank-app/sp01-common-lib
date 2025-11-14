@@ -1,4 +1,4 @@
-package com.bank.configuration;
+package com.bank.config;
 
 import com.bank.iolog.util.IOLoggerConstant;
 import com.bank.iolog.util.IOLoggerUtil;

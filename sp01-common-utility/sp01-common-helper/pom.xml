@@ -9,9 +9,9 @@
         <relativePath>../../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>sp01-common-config</artifactId>
-	<name>sp01-common-config</name>
-	<description>Module for common configurations for the bank app</description>
+	<artifactId>sp01-common-helper</artifactId>
+	<name>sp01-common-helper</name>
+	<description>Module for common helper utilities for the bank app</description>
 
 	<dependencies>
 		<dependency>

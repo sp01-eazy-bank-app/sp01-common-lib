@@ -28,7 +28,7 @@ sp01-common-models/sp01-email-service-domain-models/target
 sp01-common-models/sp01-shared-domain-models/target
 sp01-common-models/sp01-sms-service-domain-models/target
 
-sp01-common-utility/sp01-common-config/target
+sp01-common-utility/sp01-common-helper/target
 sp01-common-utility/sp01-exception-handler/target
 sp01-common-utility/sp01-iologger/target
 sp01-common-utility/sp01-security-handler/target
