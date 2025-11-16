@@ -50,6 +50,12 @@
             </dependency>
             <dependency>
                 <groupId>com.bank.common</groupId>
+                <artifactId>sp01-account-service-domain-models</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.bank.common</groupId>
                 <artifactId>sp01-exception-handler</artifactId>
                 <version>${project.version}</version>
             </dependency>
