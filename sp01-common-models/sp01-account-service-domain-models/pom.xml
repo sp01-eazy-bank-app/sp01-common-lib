@@ -14,10 +14,15 @@
     <name>sp01-account-service-domain-models</name>
     <description>Domain models specific to Account Service</description>
 
+    <properties>
+        <jakarta-validation.version>3.1.1</jakarta-validation.version>
+    </properties>
+
     <dependencies>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>${jakarta-validation.version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -13,24 +13,32 @@
 	<name>sp01-common-helper</name>
 	<description>Module for common helper utilities for the bank app</description>
 
+    <properties>
+        <feign-core.version>13.3</feign-core.version>
+        <jakarta-servlet.version>6.0.0</jakarta-servlet.version>
+        <spring-context.version>6.2.7</spring-context.version>
+        <spring-web-version>6.2.8</spring-web-version>
+        <spring-security.version>6.5.4</spring-security.version>
+        <slf4j.version>2.0.13</slf4j.version>
+        <spring.amqp.version>3.1.5</spring.amqp.version>
+    </properties>
+
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
+        <!-- Feign for RequestInterceptor -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-amqp</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-core</artifactId>
+            <version>${feign-core.version}</version>
         </dependency>
 
+        <!-- Jakarta Servlet API -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>${jakarta-servlet.version}</version>
+        </dependency>
+
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -38,8 +46,46 @@
         </dependency>
 
         <dependency>
-            <groupId>com.bank.common</groupId>
-            <artifactId>sp01-iologger</artifactId>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
+        <!-- Spring Context for @Configuration, @Bean -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring-context.version}</version>
+        </dependency>
+        <!-- Spring Web for RequestContextHolder, ServletRequestAttributes -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring-web-version}</version>
+        </dependency>
+        <!-- Spring Security core -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+            <version>${spring-security.version}</version>
+        </dependency>
+
+        <!-- Spring AMQP Core -->
+        <dependency>
+            <groupId>org.springframework.amqp</groupId>
+            <artifactId>spring-amqp</artifactId>
+            <version>${spring.amqp.version}</version>
+        </dependency>
+        <!-- Spring Rabbit Integration -->
+        <dependency>
+            <groupId>org.springframework.amqp</groupId>
+            <artifactId>spring-rabbit</artifactId>
+            <version>${spring.amqp.version}</version>
         </dependency>
 	</dependencies>
 </project>

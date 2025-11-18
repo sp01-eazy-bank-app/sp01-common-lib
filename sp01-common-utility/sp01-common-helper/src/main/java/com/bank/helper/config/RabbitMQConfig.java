@@ -1,7 +1,6 @@
 package com.bank.helper.config;
 
-import com.bank.iolog.util.IOLoggerConstant;
-import com.bank.iolog.util.IOLoggerUtil;
+import com.bank.helper.util.CommonUtil;
 import org.slf4j.MDC;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
@@ -28,9 +27,9 @@ public class RabbitMQConfig {
         rabbitTemplate.setBeforePublishPostProcessors((Message message) -> {
             MessageProperties props = message.getMessageProperties();
             // --- TRACE ID ---
-            String traceId = Optional.ofNullable(MDC.get(IOLoggerConstant.TRACE_ID))
-                    .orElseGet(IOLoggerUtil::generateTraceId);
-            props.setHeader(IOLoggerConstant.TRACE_ID, traceId);
+            String traceId = Optional.ofNullable(MDC.get(CommonUtil.TRACE_ID))
+                    .orElseGet(CommonUtil::generateTraceId);
+            props.setHeader(CommonUtil.TRACE_ID, traceId);
             return message;
         });
         rabbitTemplate.setMessageConverter(messageConverter);
