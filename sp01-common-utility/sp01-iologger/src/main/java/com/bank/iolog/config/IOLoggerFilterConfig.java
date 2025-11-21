@@ -4,6 +4,7 @@ import com.bank.iolog.filter.RequestWrappingFilter;
 import com.bank.iolog.repository.IOLogEntryRepository;
 import com.bank.iolog.service.IOLoggerService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.DependsOn;
 
 @Configuration
 @DependsOn("ioLoggerTransactionManager")
+@ConditionalOnProperty(prefix = "iologger", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class IOLoggerFilterConfig {
 
     @Value("${spring.application.name:unknown-service}")
