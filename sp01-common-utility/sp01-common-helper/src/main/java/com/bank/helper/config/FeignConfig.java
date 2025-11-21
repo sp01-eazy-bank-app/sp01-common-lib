@@ -1,6 +1,6 @@
 package com.bank.helper.config;
 
-import com.bank.iolog.util.IOLoggerConstant;
+import com.bank.helper.util.CommonUtil;
 import feign.RequestInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -36,13 +36,13 @@ public class FeignConfig {
             if (attributes != null) {
                 HttpServletRequest request = attributes.getRequest();
                 // Try header first, then attribute
-                String traceId = request.getHeader(IOLoggerConstant.TRACE_ID);
+                String traceId = request.getHeader(CommonUtil.TRACE_ID);
                 if (traceId == null) {
-                    Object attr = request.getAttribute(IOLoggerConstant.TRACE_ID);
+                    Object attr = request.getAttribute(CommonUtil.TRACE_ID);
                     if (attr != null) traceId = attr.toString();
                 }
                 if (traceId != null) {
-                    requestTemplate.header(IOLoggerConstant.TRACE_ID, traceId);
+                    requestTemplate.header(CommonUtil.TRACE_ID, traceId);
                     log.debug("Propagating trace ID: {}", traceId);
                 } else {
                     log.debug("No trace ID found in request to propagate");
