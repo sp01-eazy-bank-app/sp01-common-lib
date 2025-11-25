@@ -10,24 +10,15 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>sp01-account-service-domain-models</artifactId>
-    <name>sp01-account-service-domain-models</name>
-    <description>Domain models specific to Account Service</description>
+    <artifactId>sp01-notification-service-domain-models</artifactId>
+    <name>sp01-notification-service-domain-models</name>
+    <description>Domain models specific to Notification Service</description>
 
     <dependencies>
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.bank.common</groupId>
-            <artifactId>sp01-shared-domain-models</artifactId>
-        </dependency>
     </dependencies>
+
 </project>

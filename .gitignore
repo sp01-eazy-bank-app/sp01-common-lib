@@ -28,6 +28,8 @@ sp01-common-models/sp01-email-service-domain-models/target
 sp01-common-models/sp01-shared-domain-models/target
 sp01-common-models/sp01-sms-service-domain-models/target
 sp01-common-models/sp01-account-service-domain-models/target
+sp01-common-models/sp01-kyc-service-domain-models/target
+sp01-common-models/sp01-notification-service-domain-models/target
 
 sp01-common-utility/sp01-common-helper/target
 sp01-common-utility/sp01-exception-handler/target

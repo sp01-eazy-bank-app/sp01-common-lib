@@ -19,5 +19,7 @@
         <module>sp01-shared-domain-models</module>
         <module>sp01-email-service-domain-models</module>
         <module>sp01-account-service-domain-models</module>
+        <module>sp01-kyc-service-domain-models</module>
+        <module>sp01-notification-service-domain-models</module>
     </modules>
 </project>
