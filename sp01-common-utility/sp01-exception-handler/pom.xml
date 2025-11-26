@@ -51,7 +51,7 @@
 
         <dependency>
             <groupId>com.bank.common</groupId>
-            <artifactId>sp01-shared-domain-models</artifactId>
+            <artifactId>sp01-shared-app-models</artifactId>
         </dependency>
     </dependencies>
 

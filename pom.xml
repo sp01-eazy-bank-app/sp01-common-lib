@@ -37,32 +37,32 @@
             <!--sp01 specific dependencies to be inherited: start-->
             <dependency>
                 <groupId>com.bank.common</groupId>
-                <artifactId>sp01-sms-service-domain-models</artifactId>
+                <artifactId>sp01-sms-service-app-models</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.bank.common</groupId>
-                <artifactId>sp01-shared-domain-models</artifactId>
+                <artifactId>sp01-shared-app-models</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.bank.common</groupId>
-                <artifactId>sp01-email-service-domain-models</artifactId>
+                <artifactId>sp01-email-service-app-models</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.bank.common</groupId>
-                <artifactId>sp01-account-service-domain-models</artifactId>
+                <artifactId>sp01-account-service-app-models</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.bank.common</groupId>
-                <artifactId>sp01-kyc-service-domain-models</artifactId>
+                <artifactId>sp01-kyc-service-app-models</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.bank.common</groupId>
-                <artifactId>sp01-notification-service-domain-models</artifactId>
+                <artifactId>sp01-notification-service-app-models</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
