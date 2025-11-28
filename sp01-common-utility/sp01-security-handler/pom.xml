@@ -4,9 +4,9 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
         <groupId>com.bank.common</groupId>
-        <artifactId>sp01-common-lib</artifactId>
+        <artifactId>sp01-common-utility</artifactId>
         <version>1.0.0-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>sp01-security-handler</artifactId>

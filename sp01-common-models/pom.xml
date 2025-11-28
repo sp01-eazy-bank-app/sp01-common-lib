@@ -12,7 +12,7 @@
 	<artifactId>sp01-common-models</artifactId>
     <packaging>pom</packaging>
 	<name>sp01-common-models</name>
-	<description>Parent module for domain models shared across bank services</description>
+	<description>Parent module for app models shared across bank services</description>
 
     <modules>
         <module>sp01-sms-service-app-models</module>
