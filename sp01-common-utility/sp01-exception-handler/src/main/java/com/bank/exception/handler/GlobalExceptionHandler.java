@@ -2,9 +2,9 @@ package com.bank.exception.handler;
 
 import com.bank.exception.model.BusinessException;
 import com.bank.exception.model.TechnicalException;
-import com.bank.shared.model.api.ApiErrorResponse;
-import com.bank.shared.model.api.FieldValidationError;
-import com.bank.shared.model.api.ValidationErrorResponse;
+import com.bank.models.shared.api.ApiErrorResponse;
+import com.bank.models.shared.api.FieldValidationError;
+import com.bank.models.shared.api.ValidationErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;

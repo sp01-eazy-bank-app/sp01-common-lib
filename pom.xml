@@ -20,6 +20,9 @@
         <spring.boot.version>3.5.5</spring.boot.version>
         <spring-cloud.version>2025.0.0</spring-cloud.version>
         <mysql.connector.version>8.0.33</mysql.connector.version>
+        <jakarta-validation.version>3.1.1</jakarta-validation.version>
+        <jakarta-servlet.version>6.0.0</jakarta-servlet.version>
+        <mapstruct.version>1.6.3</mapstruct.version>
 	</properties>
 
     <!-- Parent POM manages versions for all submodules -->
@@ -35,22 +38,32 @@
             <!--sp01 specific dependencies to be inherited: start-->
             <dependency>
                 <groupId>com.bank.common</groupId>
-                <artifactId>sp01-sms-service-domain-models</artifactId>
+                <artifactId>sp01-sms-service-app-models</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.bank.common</groupId>
-                <artifactId>sp01-shared-domain-models</artifactId>
+                <artifactId>sp01-shared-app-models</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.bank.common</groupId>
-                <artifactId>sp01-email-service-domain-models</artifactId>
+                <artifactId>sp01-email-service-app-models</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.bank.common</groupId>
-                <artifactId>sp01-account-service-domain-models</artifactId>
+                <artifactId>sp01-account-service-app-models</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bank.common</groupId>
+                <artifactId>sp01-kyc-service-app-models</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bank.common</groupId>
+                <artifactId>sp01-notification-service-app-models</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -82,9 +95,31 @@
                 <version>${lombok.version}</version>
             </dependency>
             <dependency>
+                <groupId>jakarta.validation</groupId>
+                <artifactId>jakarta.validation-api</artifactId>
+                <version>${jakarta-validation.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>${jakarta-servlet.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${mysql.connector.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-processor</artifactId>
+                <version>${mapstruct.version}</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
@@ -140,6 +175,11 @@
                                 <groupId>org.projectlombok</groupId>
                                 <artifactId>lombok</artifactId>
                                 <version>${lombok.version}</version>
+                            </path>
+                            <path>
+                                <groupId>org.mapstruct</groupId>
+                                <artifactId>mapstruct-processor</artifactId>
+                                <version>${mapstruct.version}</version>
                             </path>
                         </annotationProcessorPaths>
                     </configuration>

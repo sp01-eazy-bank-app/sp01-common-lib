@@ -4,9 +4,9 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
         <groupId>com.bank.common</groupId>
-        <artifactId>sp01-common-lib</artifactId>
+        <artifactId>sp01-common-utility</artifactId>
         <version>1.0.0-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>sp01-common-helper</artifactId>
@@ -15,12 +15,7 @@
 
     <properties>
         <feign-core.version>13.3</feign-core.version>
-        <jakarta-servlet.version>6.0.0</jakarta-servlet.version>
-        <spring-context.version>6.2.7</spring-context.version>
-        <spring-web-version>6.2.8</spring-web-version>
-        <spring-security.version>6.5.4</spring-security.version>
         <slf4j.version>2.0.13</slf4j.version>
-        <spring.amqp.version>3.1.5</spring.amqp.version>
     </properties>
 
 	<dependencies>
@@ -35,7 +30,6 @@
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
-            <version>${jakarta-servlet.version}</version>
         </dependency>
 
         <!-- Lombok -->
@@ -60,32 +54,27 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>${spring-context.version}</version>
         </dependency>
         <!-- Spring Web for RequestContextHolder, ServletRequestAttributes -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-            <version>${spring-web-version}</version>
         </dependency>
         <!-- Spring Security core -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
-            <version>${spring-security.version}</version>
         </dependency>
 
         <!-- Spring AMQP Core -->
         <dependency>
             <groupId>org.springframework.amqp</groupId>
             <artifactId>spring-amqp</artifactId>
-            <version>${spring.amqp.version}</version>
         </dependency>
         <!-- Spring Rabbit Integration -->
         <dependency>
             <groupId>org.springframework.amqp</groupId>
             <artifactId>spring-rabbit</artifactId>
-            <version>${spring.amqp.version}</version>
         </dependency>
 	</dependencies>
 </project>

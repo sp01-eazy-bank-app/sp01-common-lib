@@ -4,21 +4,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
         <groupId>com.bank.common</groupId>
-        <artifactId>sp01-common-lib</artifactId>
+        <artifactId>sp01-common-utility</artifactId>
         <version>1.0.0-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>sp01-exception-handler</artifactId>
 	<name>sp01-exception-handler</name>
 	<description>Global exception handler bank project</description>
-
-    <properties>
-        <jakarta-validation.version>3.1.1</jakarta-validation.version>
-        <jakarta-servlet.version>6.0.0</jakarta-servlet.version>
-        <spring-web.version>6.2.8</spring-web.version>
-        <spring-webmvc-version>6.2.10</spring-webmvc-version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -30,28 +23,24 @@
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
-            <version>${jakarta-validation.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
-            <version>${jakarta-servlet.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-            <version>${spring-web.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
-            <version>${spring-webmvc-version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.bank.common</groupId>
-            <artifactId>sp01-shared-domain-models</artifactId>
+            <artifactId>sp01-shared-app-models</artifactId>
         </dependency>
     </dependencies>
 

@@ -24,10 +24,12 @@ hs_err_pid*
 replay_pid*
 .idea
 
-sp01-common-models/sp01-email-service-domain-models/target
-sp01-common-models/sp01-shared-domain-models/target
-sp01-common-models/sp01-sms-service-domain-models/target
-sp01-common-models/sp01-account-service-domain-models/target
+sp01-common-models/sp01-email-service-app-models/target
+sp01-common-models/sp01-shared-app-models/target
+sp01-common-models/sp01-sms-service-app-models/target
+sp01-common-models/sp01-account-service-app-models/target
+sp01-common-models/sp01-kyc-service-app-models/target
+sp01-common-models/sp01-notification-service-app-models/target
 
 sp01-common-utility/sp01-common-helper/target
 sp01-common-utility/sp01-exception-handler/target
